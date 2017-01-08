@@ -11,6 +11,9 @@ class Common extends Config
         $di->set('aura/project-kernel:logger', $di->lazyNew('Monolog\Logger'));
         
         $di->params['Aura\View\View']['helpers'] = $di->lazyGet('aura/html:helper');
+        $di->params['ZBateson\MailboxFolder\Helper\Route']['router'] = $di->lazyGet('aura/web-kernel:router');
+        $di->params['Aura\Html\HelperLocator']['map']['route'] = $di->lazyNew('ZBateson\MailboxFolder\Helper\Route');
+        
         $di->params['Aura\View\TemplateRegistry']['paths'] = [
             dirname(__DIR__) . '/templates/views',
             dirname(__DIR__) . '/templates/layouts',
@@ -62,7 +65,7 @@ class Common extends Config
 
         $router->add('list', '/')
             ->setValues(['action' => 'list']);
-        $router->add('view', '/view')
+        $router->add('view', '/list/view')
             ->setValues(['action' => 'view']);
     }
 

@@ -3,7 +3,7 @@ $subject = $this->email->getHeaderValue('Subject', '<Empty Subject>');
 $this->title($subject);
 ?>
 <h1 class="heading">
-    <a href="/">Outgoing emails - listing</a> &gt;
+    <a href="<?= $this->escape()->attr($this->route('list')); ?>">Outgoing emails - listing</a> &gt;
     <span class="sub"><?= $this->escape()->html($subject);?></span>
 </h1>
 <div class="email-headers">
@@ -16,7 +16,7 @@ $this->title($subject);
         ?>
     </dl>
     <div class="back">
-        <a href="/">Back to email list</a>
+        <a href="<?= $this->escape()->attr($this->route('list')); ?>">Back to email list</a>
     </div>
 </div>
 
