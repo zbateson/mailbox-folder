@@ -14,6 +14,12 @@ class Route
 
     public function __invoke($name, $data = array())
     {
+        if (rtrim($name, '/') === '') {
+            $match = $this->router->match('/');
+            if ($match !== null) {
+                $name = $match->name;
+            }
+        }
         return $this->router->generate($name, $data);
     }
 }
