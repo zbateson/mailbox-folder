@@ -24,7 +24,7 @@ $this->title($subject);
     <?php
     $html = $this->email->getHtmlContent();
     if ($html !== null) {
-        echo preg_replace('/.*?<body>(.*?)<\/body>.*?/ims', '$1', $html);
+        echo preg_replace('/^.*?<body>(.*?)<\/body>.*$/ims', '$1', $html);
     } else {
         echo nl2br($this->escape()->html($this->email->getTextContent()));
     }
