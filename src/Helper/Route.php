@@ -17,7 +17,7 @@ class Route
     public function __invoke($name, $data = array())
     {
         if (rtrim($name, '/') === '') {
-            return $this->basepath;
+            return rtrim($this->basepath, '/');
         }
         return $this->router->generate($name, $data);
     }
