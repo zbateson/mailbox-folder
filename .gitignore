@@ -1,0 +1,5 @@
+vendor/
+tmp/
+config/Dev.php
+config/Test.php
+config/Prod.php
