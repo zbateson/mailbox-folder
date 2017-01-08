@@ -5,7 +5,7 @@ $this->title(' - MailboxFolder');
 <html>
     <head>
         <meta charset="UTF-8">
-        <link rel="stylesheet" type="text/css" href="<?= $this->escape()->attr($this->route(''));?>css/default.css">
+        <link rel="stylesheet" type="text/css" href="<?= $this->escape()->attr($this->route('/'));?>css/default.css">
         <?= $this->title(); ?>
     </head>
     <body>
