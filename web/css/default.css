@@ -1,0 +1,27 @@
+/* 
+    Created on : 28-Oct-2015, 4:28:07 PM
+    Author     : Zaahid Bateson
+*/
+body{font:14px Helvetica;margin:10px;}
+.heading{padding:15px 0px;margin:0px;font-size:1.5em}
+.heading a{color:#002145;text-decoration:none}
+.heading .sub{font-size:0.6em}
+.inbox-list a:link,.inbox-list a:visited{color:inherit;text-decoration:none}
+.inbox-list a:hover,.inbox-list a:focus{background-color:#002145;color:#fff}
+.inbox-list a:active{background-color:#f80}
+.inbox-list{background:#fff;display:table;width:100%}
+.inbox-list .row{min-height:20px;background:#98B2C3;margin:2px 0px;display:table-row}
+.inbox-list .column{padding:5px;display:table-cell}
+.inbox-list .header{background-color:#2F5D7C;font-weight:bold;color:#fff}
+.inbox-list .subject{width:55%}
+.inbox-list .date{width:15%}
+.inbox-list .to{width:30%}
+.inbox-list .end-row{clear:left}
+
+.email-headers{background:#98B2C3;margin:0px;padding:15px;border-bottom:3px #000 groove;line-height:18px}
+.email-headers dl{margin:0px;padding:0px}
+.email-headers dt{width:180px;clear:both;float:left;text-align:right;color:#444}
+.email-headers dd{margin-left:190px}
+.email-headers .back{text-align:right}
+.email-headers .back a{color:#fff}
+.email-body{padding:15px}

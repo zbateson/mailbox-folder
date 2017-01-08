@@ -1,0 +1,41 @@
+{
+    "name": "zbateson/mailbox-folder",
+    "description": "Lists and displays email messages stored on a local folder",
+    "keywords": ["email", "inbox", "folder", "mailbox"],
+    "license": "BSD-3-Clause",
+    "authors": [
+        {
+            "name": "Zaahid Bateson",
+            "email": "zbateson@users.noreply.github.com"
+        }
+    ],
+    "require": {
+        "aura/web-kernel": "~2.1.0",
+        "monolog/monolog": "~1.0",
+        "aura/view": "~2.1.0",
+        "aura/html": "~2.4.0",
+        "zbateson/mail-mime-parser": "~0.3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "ZBateson\\MailboxFolder\\": "src/",
+            "Aura\\Web_Project\\_Config\\": "config/"
+        }
+    },
+    "extra": {
+        "aura": {
+            "type": "project",
+            "config": {
+                "common": "Aura\\Web_Project\\_Config\\Common",
+                "dev": "Aura\\Web_Project\\_Config\\Dev",
+                "test": "Aura\\Web_Project\\_Config\\Test",
+                "prod": "Aura\\Web_Project\\_Config\\Prod"
+            }
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Aura\\Web_Project\\": "tests/"
+        }
+    }
+}
