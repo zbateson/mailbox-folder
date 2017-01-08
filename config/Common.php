@@ -9,9 +9,15 @@ class Common extends Config
     public function define(Container $di)
     {
         $di->set('aura/project-kernel:logger', $di->lazyNew('Monolog\Logger'));
+
+        $di->values['basepath'] = '/';
+        $di->params['Aura\Router\Router']['basepath'] = $di->lazyValue('basepath');
         
         $di->params['Aura\View\View']['helpers'] = $di->lazyGet('aura/html:helper');
-        $di->params['ZBateson\MailboxFolder\Helper\Route']['router'] = $di->lazyGet('aura/web-kernel:router');
+        $di->params['ZBateson\MailboxFolder\Helper\Route'] = [
+            'router' => $di->lazyGet('aura/web-kernel:router'),
+            'basepath' => $di->lazyValue('basepath')
+        ];
         $di->params['Aura\Html\HelperLocator']['map']['route'] = $di->lazyNew('ZBateson\MailboxFolder\Helper\Route');
         
         $di->params['Aura\View\TemplateRegistry']['paths'] = [

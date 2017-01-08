@@ -8,7 +8,7 @@ class Test extends Config
 {
     public function define(Container $di)
     {
-        $di->params['Aura\Router\Router']['basepath'] = '/';
+        $di->values['basepath'] = '/';
         $di->setter['ZBateson\MailboxFolder\Domain\EmailFolderGateway']['setPath'] = '/path/to/mailbox/folder';
     }
 
