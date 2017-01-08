@@ -11,7 +11,7 @@ $this->title($subject);
         <?php
         foreach ($this->email->getHeaders() as $header) {
             echo "<dt>", $this->escape()->html($header->getName()), "</dt>\r\n";
-            echo "<dd>", $this->escape()->html($header->getValue()), "</dd>\r\n";
+            echo "<dd>&nbsp;", $this->escape()->html($header->getValue()), "</dd>\r\n";
         }
         ?>
     </dl>
