@@ -25,7 +25,6 @@ $this->title($subject);
                 );
                 echo $this->escape()->html(implode(', ', $addresses));
             } elseif ($header instanceof \ZBateson\MailMimeParser\Header\ParameterHeader) {
-                echo $this->escape()->html($header->getValue());
                 $parameters = array_map(
                     function($a) {
                         if ($a instanceof \ZBateson\MailMimeParser\Header\Part\ParameterPart) {
@@ -35,7 +34,7 @@ $this->title($subject);
                     },
                     $header->getParts()
                 );
-                echo $this->escape()->html(implode(', ', $parameters));
+                echo $this->escape()->html(implode('; ', $parameters));
             } else {
                 $this->escape()->html($header->getValue());
             }
