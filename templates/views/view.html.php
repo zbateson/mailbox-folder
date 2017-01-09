@@ -11,7 +11,35 @@ $this->title($subject);
         <?php
         foreach ($this->email->getHeaders() as $header) {
             echo "<dt>", $this->escape()->html($header->getName()), "</dt>\r\n";
-            echo "<dd>&nbsp;", $this->escape()->html($header->getValue()), "</dd>\r\n";
+            echo "<dd>&nbsp;";
+            if ($header instanceof \ZBateson\MailMimeParser\Header\AddressHeader) {
+                $addresses = array_map(
+                    function($a) {
+                        $name = $a->getName();
+                        if ($name !== '') {
+                            return $name . ' <' . $a->getEmail() . '>';
+                        }
+                        return $a->getEmail();
+                    },
+                    $header->getAddresses()
+                );
+                echo $this->escape()->html(implode(', ', $addresses));
+            } elseif ($header instanceof \ZBateson\MailMimeParser\Header\ParameterHeader) {
+                echo $this->escape()->html($header->getValue());
+                $parameters = array_map(
+                    function($a) {
+                        if ($a instanceof \ZBateson\MailMimeParser\Header\Part\ParameterPart) {
+                            return $a->getName() . '=' . $a->getValue();
+                        }
+                        return $a->getValue();
+                    },
+                    $header->getParts()
+                );
+                echo $this->escape()->html(implode(', ', $parameters));
+            } else {
+                $this->escape()->html($header->getValue());
+            }
+            echo "</dd>";
         }
         ?>
     </dl>
