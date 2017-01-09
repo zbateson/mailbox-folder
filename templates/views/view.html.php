@@ -36,7 +36,7 @@ $this->title($subject);
                 );
                 echo $this->escape()->html(implode('; ', $parameters));
             } else {
-                $this->escape()->html($header->getValue());
+                echo $this->escape()->html($header->getValue());
             }
             echo "</dd>";
         }
