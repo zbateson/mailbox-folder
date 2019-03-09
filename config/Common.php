@@ -10,36 +10,65 @@ class Common extends Config
     {
         $di->set('aura/project-kernel:logger', $di->lazyNew('Monolog\Logger'));
 
+        $di->values['maildir'] = '.';
         $di->values['basepath'] = '/';
+        $di->values['writedir'] = sys_get_temp_dir() . '/mailbox-folder';
         $di->params['Aura\Router\Router']['basepath'] = $di->lazyValue('basepath');
-        
+
         $di->params['Aura\View\View']['helpers'] = $di->lazyGet('aura/html:helper');
         $di->params['ZBateson\MailboxFolder\Helper\Route'] = [
             'router' => $di->lazyGet('aura/web-kernel:router'),
             'basepath' => $di->lazyValue('basepath')
         ];
         $di->params['Aura\Html\HelperLocator']['map']['route'] = $di->lazyNew('ZBateson\MailboxFolder\Helper\Route');
-        
+
         $di->params['Aura\View\TemplateRegistry']['paths'] = [
             dirname(__DIR__) . '/templates/views',
             dirname(__DIR__) . '/templates/layouts',
         ];
         $di->set('view', $di->lazyNew('Aura\View\View'));
-        
+
+        $di->params['JamesMoss\Flywheel\Config'] = [
+            'path' => $di->lazyValue('writedir')
+        ];
+        $di->params['JamesMoss\Flywheel\Repository'] = [
+            'name' => $di->lazy(function ($dir) {
+                return hash('crc32', $dir);
+            }, $di->lazyValue('maildir')),
+            'config' => $di->lazyNew('JamesMoss\Flywheel\Config')
+        ];
+
         $di->params['ZBateson\MailboxFolder\Domain\EmailFolderGateway'] = [
-            'mailMimeParser' => $di->lazyNew('ZBateson\MailMimeParser\MailMimeParser'),
+            'parser' => $di->lazyNew('ZBateson\MailMimeParser\MailMimeParser'),
+            'repository' => $di->lazyNew('JamesMoss\Flywheel\Repository'),
+            'path' => $di->lazyValue('maildir'),
+            'logger' => $di->lazyGet('aura/project-kernel:logger')
         ];
-        $di->params['ZBateson\MailboxFolder\App\Actions\EmailListAction'] = [
+        $di->params['ZBateson\MailboxFolder\App\Actions\EmailListRestAction'] = [
+            'request' => $di->lazyGet('aura/web-kernel:request'),
+            'response' => $di->lazyGet('aura/web-kernel:response'),
+            'emailFolderGateway' => $di->lazyNew('ZBateson\MailboxFolder\Domain\EmailFolderGateway'),
+        ];
+        $di->params['ZBateson\MailboxFolder\App\Actions\EmailRestAction'] = [
+            'request' => $di->lazyGet('aura/web-kernel:request'),
+            'response' => $di->lazyGet('aura/web-kernel:response'),
+            'emailFolderGateway' => $di->lazyNew('ZBateson\MailboxFolder\Domain\EmailFolderGateway'),
+        ];
+        $di->params['ZBateson\MailboxFolder\App\Actions\EmailAttachmentAction'] = [
+            'request' => $di->lazyGet('aura/web-kernel:request'),
+            'response' => $di->lazyGet('aura/web-kernel:response'),
+            'emailFolderGateway' => $di->lazyNew('ZBateson\MailboxFolder\Domain\EmailFolderGateway'),
+        ];
+        $di->params['ZBateson\MailboxFolder\App\Actions\EmailDownloadAction'] = [
+            'request' => $di->lazyGet('aura/web-kernel:request'),
+            'response' => $di->lazyGet('aura/web-kernel:response'),
+            'emailFolderGateway' => $di->lazyNew('ZBateson\MailboxFolder\Domain\EmailFolderGateway'),
+        ];
+        $di->params['ZBateson\MailboxFolder\App\Actions\MainAction'] = [
             'request' => $di->lazyGet('aura/web-kernel:request'),
             'response' => $di->lazyGet('aura/web-kernel:response'),
             'view' => $di->lazyGet('view'),
-            'emailFolderGateway' => $di->lazyNew('ZBateson\MailboxFolder\Domain\EmailFolderGateway'),
-        ];
-        $di->params['ZBateson\MailboxFolder\App\Actions\EmailViewAction'] = [
-            'request' => $di->lazyGet('aura/web-kernel:request'),
-            'response' => $di->lazyGet('aura/web-kernel:response'),
-            'view' => $di->lazyGet('view'),
-            'emailFolderGateway' => $di->lazyNew('ZBateson\MailboxFolder\Domain\EmailFolderGateway'),
+            'appName' => $di->lazyValue('appname'),
         ];
     }
 
@@ -69,22 +98,40 @@ class Common extends Config
     {
         $router = $di->get('aura/web-kernel:router');
 
-        $router->add('list', '/')
+        $router->add('main', '/')
+            ->setValues(['action' => 'main']);
+        $router->add('list', '/api/emails')
             ->setValues(['action' => 'list']);
-        $router->add('view', '/list/view')
+        $router->add('view', '/api/emails/{id}')
             ->setValues(['action' => 'view']);
+        $router->add('download', '/emails/{id}.mime')
+            ->setValues(['action' => 'download']);
+        $router->add('attachment', '/emails/{emailId}/attachments/{id}/{name}')
+            ->setValues(['action' => 'attachment']);
     }
 
     public function modifyWebDispatcher($di)
     {
         $dispatcher = $di->get('aura/web-kernel:dispatcher');
         $dispatcher->setObject(
-            'list', 
-            $di->lazyNew('ZBateson\MailboxFolder\App\Actions\EmailListAction')
+            'main',
+            $di->lazyNew('ZBateson\MailboxFolder\App\Actions\MainAction')
         );
         $dispatcher->setObject(
-            'view', 
-            $di->lazyNew('ZBateson\MailboxFolder\App\Actions\EmailViewAction')
+            'list',
+            $di->lazyNew('ZBateson\MailboxFolder\App\Actions\EmailListRestAction')
+        );
+        $dispatcher->setObject(
+            'view',
+            $di->lazyNew('ZBateson\MailboxFolder\App\Actions\EmailRestAction')
+        );
+        $dispatcher->setObject(
+            'download',
+            $di->lazyNew('ZBateson\MailboxFolder\App\Actions\EmailDownloadAction')
+        );
+        $dispatcher->setObject(
+            'attachment',
+            $di->lazyNew('ZBateson\MailboxFolder\App\Actions\EmailAttachmentAction')
         );
     }
 }

@@ -14,7 +14,8 @@
         "monolog/monolog": "~1.0",
         "aura/view": "~2.1.0",
         "aura/html": "~2.4.0",
-        "zbateson/mail-mime-parser": "~0.3.0"
+        "zbateson/mail-mime-parser": "~1.1.3",
+        "jamesmoss/flywheel": "^0.5.2"
     },
     "autoload": {
         "psr-4": {

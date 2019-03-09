@@ -2,10 +2,13 @@
 namespace ZBateson\MailboxFolder\Domain;
 
 use ZBateson\MailboxFolder\EmailFactory;
-use ZBateson\MailboxFolder\EmailMetaDataFactory;
 use ZBateson\MailMimeParser\MailMimeParser;
+use JamesMoss\Flywheel\Repository;
+use JamesMoss\Flywheel\Document;
 use DirectoryIterator;
 use DateTime;
+
+use Psr\Log\LoggerInterface;
 
 /**
  * Description of FolderGateway
@@ -14,69 +17,159 @@ use DateTime;
  */
 class EmailFolderGateway
 {
-    private $mailMimeParser;
-    private $path = '.';
-    
-    public function __construct(MailMimeParser $mailMimeParser)
+    private $parser;
+    private $repository;
+    private $path;
+    private $logger;
+
+    public function __construct(MailMimeParser $parser, Repository $repository, $path, $logger)
     {
-        $this->mailMimeParser = $mailMimeParser;
-    }
-    
-    public function setPath($path)
-    {
+        $this->parser = $parser;
+        $this->repository = $repository;
         $this->path = $path;
+        $this->logger = $logger;
+        $this->rescan();
     }
-    
-    /**
-     * Returns an array of email messages as ZBateson\MailMimeParser\Message
-     * objects.
-     * 
-     * @return \ZBateson\MailMimeParser\Message[]
-     */
-    public function fetchAll()
+
+    private function rescan()
     {
         $di = new DirectoryIterator($this->path);
-        $emails = [];
+        $foundIds = [];
+
         foreach ($di as $fi) {
             if (!$fi->isFile() || !$fi->isReadable()) {
                 continue;
             }
-            $handle = fopen($fi->getPathname(), 'r');
-            $message = $this->mailMimeParser->parse($handle);
-            fclose($handle);
-            $ctime = DateTime::createFromFormat('U', $fi->getCTime());
-            $message->setRawHeader(
-                'Date',
-                $message->getHeaderValue(
-                    'Date',
-                    $ctime->format('r')
-                )
-            );
-            $emails[$fi->getFilename()] = $message;
-        }
-        uasort(
-            $emails,
-            function ($a, $b) {
-                return ($b->getHeader('Date')->getDateTime()->getTimestamp() - $a->getHeader('Date')->getDateTime()->getTimestamp());
+
+            $id = hash('crc32', $fi->getPathname());
+            if ($this->repository->findById($id)) {
+                array_push($foundIds, $id);
+                continue;
             }
-        );
-        return $emails;
+
+            $handle = fopen($fi->getPathname(), 'r');
+            $message = $this->parser->parse($handle);
+            fclose($handle);
+
+            if ($message->getHeader('from') === null) {
+                $this->logger->notice('Unable to parse email ' . $fi->getPathname() . '.');
+                continue;
+            }
+
+            if ($message->getHeader('date') === null) {
+                $message->setRawHeader('date', DateTime::createFromFormat('U', $fi->getCTime())->format('r'));
+            }
+
+            $preview = '';
+            if ($message->getTextStream() !== null) {
+                $stream = $message->getTextStream();
+                $preview = $stream->read(500);
+            } elseif ($message->getHtmlStream() !== null) {
+                $stream = $message->getHtmlStream();
+                $html = $stream->read(10240);
+                $preview = substr(strip_tags($html), 0, 500);
+            }
+            $preview = preg_replace('/\s+/', ' ', $preview);
+
+            $email = new Document([
+                'file' => $fi->getPathname(),
+                'subject' => $message->getHeaderValue('subject'),
+                'date' => $message->getHeader('date')->getDateTime(),
+                'from' => $message->getHeaderValue('from'),
+                'to' => $message->getHeaderValue('to'),
+                'cc' => $message->getHeaderValue('cc'),
+                'bcc' => $message->getHeaderValue('bcc'),
+                'attachmentCount' => $message->getAttachmentCount(),
+                'preview' => $preview
+            ]);
+            $email->setId($id);
+
+            if (!$this->repository->store($email)) {
+                $this->logger->error('Unable to store to repository');
+                return;
+            } else {
+                $this->logger->info('Stored email: ' . $email->getId());
+            }
+            array_push($foundIds, $id);
+        }
+
+        $this->deleteRemoved($foundIds);
     }
-    
+
+    private function deleteRemoved(array $foundIds)
+    {
+        $all = $this->repository->findAll();
+        foreach ($all as $doc) {
+            if (!in_array($doc->getId(), $foundIds)) {
+                $this->repository->delete($doc);
+            }
+        }
+    }
+
     /**
-     * Returns a Message object for the email
-     * 
-     * @param string $filename
+     * Returns all the emails within the passed limits.
+     *
+     * @param int $skip
+     * @param int $count
+     * @return \JamesMoss\Flywheel\Result
+     */
+    public function fetchAll($skip, $count)
+    {
+        return $res = $this->repository->query()
+            ->orderBy('date DESC')
+            ->limit($count, $skip)
+            ->execute();
+    }
+
+    /**
+     * Returns emails newer than the passed email Document.
+     *
+     * @param Document $email
+     * @return \JamesMoss\Flywheel\Result
+     */
+    public function fetchNewerThan(Document $email)
+    {
+        return $res = $this->repository->query()
+            ->where('date', '>', $email->date)
+            ->orderBy('date DESC')
+            ->execute();
+    }
+
+    public function getTotal()
+    {
+        return count($this->repository->findAll());
+    }
+
+    /**
+     * Returns a Document object for the email with the passed id.
+     *
+     * @param string $id
+     * @return Document
+     */
+    public function fetchById($id)
+    {
+        return $this->repository->findById($id);
+    }
+
+    /**
+     * Returns a Message object for the email with the passed id.
+     *
+     * @param string $id
      * @return \ZBateson\MailMimeParser\Message
      */
-    public function fetchBy($filename)
+    public function fetchMessageById($id)
     {
-        $filepath = $this->path . DIRECTORY_SEPARATOR . $filename;
-        $uctime = filectime($filepath);
+        $doc = $this->repository->findById($id);
+        if (!$doc) {
+            return null;
+        }
+
+        $filepath = $doc->file;
         $handle = fopen($filepath, 'r');
-        $message = $this->mailMimeParser->parse($handle);
+        $message = $this->parser->parse($handle);
         fclose($handle);
-        $ctime = DateTime::createFromFormat('U', $uctime);
+
+        $ctime = DateTime::createFromFormat('U', filectime($filepath));
         $message->setRawHeader(
             'Date',
             $message->getHeaderValue(

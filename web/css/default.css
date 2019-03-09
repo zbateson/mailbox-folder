@@ -1,27 +1,114 @@
-/* 
-    Created on : 28-Oct-2015, 4:28:07 PM
-    Author     : Zaahid Bateson
-*/
-body{font:14px Helvetica;margin:10px;}
-.heading{padding:15px 0px;margin:0px;font-size:1.5em}
-.heading a{color:#002145;text-decoration:none}
-.heading .sub{font-size:0.6em}
-.inbox-list a:link,.inbox-list a:visited{color:inherit;text-decoration:none}
-.inbox-list a:hover,.inbox-list a:focus{background-color:#002145;color:#fff}
-.inbox-list a:active{background-color:#f80}
-.inbox-list{background:#fff;display:table;width:100%}
-.inbox-list .row{min-height:20px;background:#98B2C3;margin:2px 0px;display:table-row}
-.inbox-list .column{padding:5px;display:table-cell}
-.inbox-list .header{background-color:#2F5D7C;font-weight:bold;color:#fff}
-.inbox-list .subject{width:55%}
-.inbox-list .date{width:15%}
-.inbox-list .to{width:30%}
-.inbox-list .end-row{clear:left}
 
-.email-headers{background:#98B2C3;margin:0px;padding:15px;border-bottom:3px #000 groove;line-height:18px}
-.email-headers dl{margin:0px;padding:0px}
-.email-headers dt{width:180px;clear:both;float:left;text-align:right;color:#444}
-.email-headers dd{margin-left:190px}
-.email-headers .back{text-align:right}
-.email-headers .back a{color:#fff}
-.email-body{padding:15px}
+.content {
+    max-width: 900px;
+    margin: 0px auto;
+    height: 100%;
+}
+
+.email-container {
+    height: 100%;
+}
+
+#emailsList {
+    min-height: 200px;
+
+}
+#emailsList md-icon {
+    margin-right: 16px;
+}
+
+#emailsList .unread {
+    background: #fefeee;
+}
+
+#emailsList .md-list-item-text h3, #emailsList .md-list-item-text h4 {
+    font-size: 0.9em;
+    line-height: 1.1em;
+}
+#emailsList strong {
+    color: #666;
+    font-size: 14px;
+}
+
+#emailsList .md-list-item-text p {
+    max-height: 27px;
+    font-size: 12px;
+    line-height: 1.1em;
+    margin-top: 5px;
+}
+
+#emailsList .from-area {
+    width: 200px;
+    margin: 0px;
+    padding-left: 5px;
+    line-height: 1.1em;
+    font-size: 0.8em;
+}
+
+#emailsList .from-area div {
+    width: 195px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+#emailDialog .email-headers-container {
+    min-height: 160px;
+}
+
+#emailDialog .email-headers {
+    font-size: 16px;
+    line-height: 1.2em;
+    margin: 16px 16px 20px 16px;
+    max-height: 160px;
+    min-height: 100px;
+    overflow-y: auto;
+}
+
+#emailDialog .email-headers-container .header-action {
+    width: 290px;
+    font-size: 18px;
+}
+
+#emailDialog .email-headers-container .header-action div {
+    text-align: right;
+    margin-right: 10px;
+}
+
+#emailDialog .email-headers-container .header-action md-switch {
+    margin: 0px;
+}
+
+#emailDialog .email-headers-container .header-action .md-button {
+    margin-right: 8px;
+    margin-bottom: 24px;
+}
+
+#emailDialog .email-headers strong {
+    display: inline-block;
+    min-width: 80px;
+}
+
+#emailDialog .attachments {
+    background-color: #fff;
+    color: #000;
+}
+
+#emailDialog .attachments md-icon {
+    margin: auto 0px;
+    color: #000;
+}
+
+#emailDialog .hasAttachments {
+    padding-top: 0px;
+}
+
+#emailDialog .plain-text {
+    white-space: pre-line;
+}
+
+#emailDialog .email-html-content {
+    overflow-y: visible;
+    min-width: 100%;
+    height: 95%;
+}
