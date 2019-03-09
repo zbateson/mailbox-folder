@@ -1,0 +1,87 @@
+<div class="email-container" ng-controller="EmailsController as vm" layout="column">
+    <p ng-show="!vm.emails || vm.emails.getLength() === 0" flex="none">
+        There are no emails to show at the moment.
+    </p>
+    <p ng-show="vm.emails && vm.emails.getLength() !== 0" flex="none">
+        You have {{ vm.emails.getLength() }} emails.
+    </p>
+    <md-list flex="100" md-virtual-repeat-container id="emailsList">
+        <md-list-item md-virtual-repeat="item in vm.emails" md-on-demand class="md-3-line" ng-class="{ unread: !vm.isRead(item.id) }" ng-click="vm.openEmailDialog($event, item)">
+            <md-icon ng-if="item.attachmentCount" md-font-set="material-icons" aria-label="Attachment">attachment</md-icon>
+            <md-icon ng-if="!item.attachmentCount && !vm.isRead(item.id)" md-font-set="material-icons" aria-label="Unread">markunread</md-icon>
+            <md-icon ng-if="!item.attachmentCount && vm.isRead(item.id)" aria-label=""></md-icon>
+            <div class="md-list-item-text">
+                <h3 ng-if="item.to"><strong>To:</strong> {{ item.to }}</h3>
+                <h4 ng-if="item.cc || item.bcc">
+                    <span ng-if="item.cc"><strong>Cc:</strong> {{ item.cc }}</span>
+                    <span ng-if="item.bcc"><strong>Bcc:</strong> {{ item.bcc }}</span>
+                </h4>
+                <p><strong>{{ item.subject }}</strong> {{ item.preview }}</p>
+            </div>
+            <div class="md-secondary">
+                <div class="from-area">
+                    <div><strong>{{ vm.formatDate(item.date.date) }}</strong>, from:</div>
+                    <div>{{ item.from }}</div>
+                </div>
+            </div>
+        </md-list-item>
+    </md-list>
+
+    <div style="visibility: hidden">
+        <div id="emailDialog" class="md-dialog-container">
+            <md-dialog aria-label="{{ vm.emailDialogTitle }}" flex="100%">
+                <md-toolbar>
+                    <div class="md-toolbar-tools">
+                        <h3 class="foreground-1">{{ vm.emailDialogTitle }}</h3>
+                        <span flex></span>
+                        <md-button class="md-icon-button" ng-click="vm.cancelEmailDialog()">
+                            <md-icon md-font-set="material-icons" aria-label="Close">close</md-icon>
+                        </md-button>
+                    </div>
+                </md-toolbar>
+                <md-toolbar class="email-headers-container md-hue-1" layout="row" layout-align="start stretch">
+                    <div class="email-headers" flex="flex" layout="column" layout-align="start start">
+                        <div><strong>To:</strong> {{ vm.selectedEmail.to }}</div>
+                        <div><strong>Cc:</strong> {{ vm.selectedEmail.cc }}</div>
+                        <div><strong>Bcc:</strong> {{ vm.selectedEmail.bcc }}</div>
+                        <div><strong>From:</strong> {{ vm.selectedEmail.from }}</div>
+                        <div><strong>Date:</strong> {{ vm.selectedEmail.date | date:'medium' }}</div>
+                        <div ng-if="vm.showFullHeaders">
+                            <div ng-repeat="header in vm.filterSelectedHeaders()">
+                                <strong>{{ header.name }}: </strong> {{ header.value }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="header-action" layout="column" layout-align="end end">
+                        <div><md-switch ng-model="vm.showFullHeaders" aria-label="Show full message headers">
+                            Show full message headers
+                        </md-switch></div>
+                        <div><a href="emails/{{ vm.selectedEmail.id }}.mime" md-button class="md-raised md-warn">Download Raw</a></div>
+                    </div>
+                </md-toolbar>
+                <md-toolbar ng-if="vm.selectedEmail.attachments.length !== 0" class="attachments">
+                    <div class="md-toolbar-tools">
+                        <md-icon flex="nogrow" aria-label="Attachment">attachment</md-icon>
+                        <a href="emails/{{ vm.selectedEmail.id }}/attachments/{{ att.id }}/{{ att.name }}" md-button ng-repeat="att in vm.selectedEmail.attachments">{{ att.name }}</a>
+                    </div>
+                </md-toolbar>
+                <md-dialog-content>
+                    <div class="md-dialog-content" ng-class="{ hasAttachments: vm.selectedEmail.attachments.length !== 0 }">
+                        <div ng-if="!vm.selectedEmail" layout="row" layout-align="center center">
+                            <md-progress-circular md-mode="indeterminate"></md-progress-circular>
+                        </div>
+                        <iframe class="email-html-content" ng-if="vm.selectedEmail.html && vm.showHtml" frameborder="0" scrolling="no" src="about:blank" onload="resizeIframe(this)"></iframe>
+                        <div ng-if="!vm.selectedEmail.html || !vm.showHtml" class="email-dialog-content" layout="column">
+                            <div class="plain-text" ng-if="vm.selectedEmail.text">{{ vm.selectedEmail.text }}</div>
+                        </div>
+                    </div>
+                </md-dialog-content>
+                <md-dialog-actions layout="row">
+                    <md-switch ng-model="vm.showHtml" aria-label="HTML" ng-disabled="!vm.selectedEmail.html">HTML</md-switch>
+                    <span flex></span>
+                    <md-button md-autofocus ng-click="vm.cancelEmailDialog()" class="md-primary">Close</md-button>
+                </md-dialog-actions>
+            </md-dialog>
+        </div>
+    </div>
+</div>
