@@ -10,8 +10,8 @@ class Dev extends Config
     {
         ini_set('error_reporting', E_ALL);
         ini_set('display_errors', true);
-        
-        $di->setter['ZBateson\MailboxFolder\Domain\EmailFolderGateway']['setPath'] = '/path/to/mailbox/folder';
+
+        $di->values['maildir'] = dirname(__DIR__) . '/vendor/zbateson/mail-mime-parser/tests/_data/emails';
     }
 
     public function modify(Container $di)

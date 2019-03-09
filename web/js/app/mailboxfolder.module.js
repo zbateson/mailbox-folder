@@ -4,7 +4,7 @@
     .module('mailboxfolder', ['ngMaterial', 'ngAnimate'])
     .config(function($mdThemingProvider) {
         $mdThemingProvider.theme('default')
-            .primaryPalette('indigo')
+            .primaryPalette('deep-purple')
             .accentPalette('deep-orange');
     });
 })();

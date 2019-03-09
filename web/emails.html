@@ -1,9 +1,45 @@
 <div class="email-container" ng-controller="EmailsController as vm" layout="column">
+    <md-toolbar class="heading md-hue-1">
+        <div class="md-toolbar-tools">
+            <h1>Mailbox Folder Outbox</h1>
+            <span flex></span>
+            <small ng-if="vm.emails && vm.emails.getLength() !== 0">{{ vm.emails.getLength() }} Emails</small>
+        </div>
+    </md-toolbar>
+    <md-toolbar class="heading md-tall md-hue-3" flex="none">
+        <form class="md-toolbar-tools" id="searchForm" method="GET" flex="none" layout="column" layout-align="start start">
+            <div class="attachment-filters">
+                <md-radio-group ng-model="vm.filter.attachments" layout="row">
+                    <md-radio-button ng-value="false">All</md-radio-button>
+                    <md-radio-button ng-value="true">Only with attachments</md-radio-button>
+                </md-radio-group>
+            </div>
+            <div layout="row" style="width: 100%">
+                <md-input-container flex>
+                    <md-icon md-font-set="material-icons" aria-label="Search">search</md-icon>
+                    <label>Filter</label>
+                    <input type="text" ng-model="vm.filter.text" />
+                </md-input-container>
+                <md-input-container flex="none">
+                    <label>Start date</label>
+                    <md-datepicker md-open-on-focus md-max-date="vm.maxDateStart()" ng-model="vm.filter.startDate"></md-datepicker>
+                </md-input-container>
+                <md-input-container flex="none">
+                    <label>End date</label>
+                    <md-datepicker md-open-on-focus md-min-date="vm.minDateEnd()" md-max-date="vm.maxDateToday" ng-model="vm.filter.endDate"></md-datepicker>
+                </md-input-container>
+                <div class="filter-button" flex="none">
+                    <md-button
+                        ng-disabled="vm.isEmptyFilter()"
+                        class=""
+                        ng-click="vm.clearFilter()"
+                        >Clear...</md-button>
+                </div>
+            </div>
+        </form>
+    </md-toolbar>
     <p ng-show="!vm.emails || vm.emails.getLength() === 0" flex="none">
         There are no emails to show at the moment.
-    </p>
-    <p ng-show="vm.emails && vm.emails.getLength() !== 0" flex="none">
-        You have {{ vm.emails.getLength() }} emails.
     </p>
     <md-list flex="100" md-virtual-repeat-container id="emailsList">
         <md-list-item md-virtual-repeat="item in vm.emails" md-on-demand class="md-3-line" ng-class="{ unread: !vm.isRead(item.id) }" ng-click="vm.openEmailDialog($event, item)">
@@ -42,8 +78,8 @@
                 <md-toolbar class="email-headers-container md-hue-1" layout="row" layout-align="start stretch">
                     <div class="email-headers" flex="flex" layout="column" layout-align="start start">
                         <div><strong>To:</strong> {{ vm.selectedEmail.to }}</div>
-                        <div><strong>Cc:</strong> {{ vm.selectedEmail.cc }}</div>
-                        <div><strong>Bcc:</strong> {{ vm.selectedEmail.bcc }}</div>
+                        <div ng-if="vm.selectedEmail.cc"><strong>Cc:</strong> {{ vm.selectedEmail.cc }}</div>
+                        <div ng-if="vm.selectedEmail.bcc"><strong>Bcc:</strong> {{ vm.selectedEmail.bcc }}</div>
                         <div><strong>From:</strong> {{ vm.selectedEmail.from }}</div>
                         <div><strong>Date:</strong> {{ vm.selectedEmail.date | date:'medium' }}</div>
                         <div ng-if="vm.showFullHeaders">
@@ -77,7 +113,7 @@
                     </div>
                 </md-dialog-content>
                 <md-dialog-actions layout="row">
-                    <md-switch ng-model="vm.showHtml" aria-label="HTML" ng-disabled="!vm.selectedEmail.html">HTML</md-switch>
+                    <md-switch ng-model="vm.showHtml" aria-label="HTML" ng-disabled="!vm.selectedEmail.html || !vm.selectedEmail.text">HTML</md-switch>
                     <span flex></span>
                     <md-button md-autofocus ng-click="vm.cancelEmailDialog()" class="md-primary">Close</md-button>
                 </md-dialog-actions>

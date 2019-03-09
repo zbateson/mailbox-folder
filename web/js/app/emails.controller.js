@@ -147,7 +147,9 @@
         function filterSelectedHeaders() {
             if (vm.selectedEmail && vm.selectedEmail.headers) {
                 return vm.selectedEmail.headers.filter(function(e) {
-                    return ([ 'subject', 'from', 'to', 'cc', 'bcc', 'date' ].indexOf(e.name.toLowerCase()) === -1);
+                    return ([
+                            'subject', 'from', 'to', 'cc', 'bcc', 'date'
+                        ].indexOf(e.name.toLowerCase()) === -1);
                 });
             }
             return [];
@@ -158,8 +160,25 @@
         }
 
         function resizeIframe(ob) {
+            var emailHtml = vm.selectedEmail.html.replace(
+                /<img\b[^>]*src\s*=\s*"(cid:([^"]*))"[^>]*>/ig,
+                function(match, p1, p2) {
+                    var att = vm.selectedEmail.attachments;
+                    for (var i = 0; i < att.length; ++i) {
+                        if (att[i].contentId === p2) {
+                            return match.replace(
+                                p1,
+                                'emails/' + vm.selectedEmail.id
+                                    + '/attachments/' + att[i].id + '/'
+                                    + att[i].name + '?inline=true'
+                            );
+                        }
+                    }
+                    return match;
+                }
+            );
             ob.contentDocument.open();
-            ob.contentDocument.write(vm.selectedEmail.html);
+            ob.contentDocument.write(emailHtml);
             ob.contentDocument.close();
             ob.contentDocument.body.style.margin = "0px";
             ob.contentDocument.body.firstElementChild.style.marginTop = "0px";

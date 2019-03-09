@@ -1,18 +1,46 @@
 
 .content {
-    max-width: 900px;
-    margin: 0px auto;
     height: 100%;
+}
+
+.heading .md-toolbar-tools {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.heading .md-toolbar-tools h1 {
+    margin: 0 0;
+    text-transform: uppercase;
+}
+.heading .md-toolbar-tools small {
+    margin-right: 24px;
 }
 
 .email-container {
     height: 100%;
 }
 
+#searchForm {
+}
+
+#searchForm .attachment-filters {
+    margin: 30px 0px 0px 35px;
+    font-size: 18px;
+}
+
+#searchForm .filter-button {
+    margin: 18px 0;
+}
+
 #emailsList {
     min-height: 200px;
-
 }
+
+#emailsList md-list-item {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
 #emailsList md-icon {
     margin-right: 16px;
 }
