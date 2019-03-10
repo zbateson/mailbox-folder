@@ -2,9 +2,9 @@
 
 Shows a mailbox of emails stored as MIME messages in a folder.
 
-![Screenshot 1](https://raw.githubusercontent.com/zbateson/mailbox-folder/assets/1.png)
+![Screenshot 1](https://raw.githubusercontent.com/zbateson/mailbox-folder/assets/2.png)
 
-![Screenshot 2](https://raw.githubusercontent.com/zbateson/mailbox-folder/assets/2.png)
+![Screenshot 2](https://raw.githubusercontent.com/zbateson/mailbox-folder/assets/1.png)
 
 ## Requirements
 
