@@ -53,7 +53,7 @@ class EmailRestAction
             array_push($resp['email']['headers'], [ 'name' => $h->getName(), 'value' => $h->getValue() ]);
         }
         foreach ($message->getAllAttachmentParts() as $id => $at) {
-            array_push($resp['email']['attachments'], [ 'id' => $id, 'name' => $at->getFilename(), 'contentId' => $at->getContentId() ]);
+            array_push($resp['email']['attachments'], [ 'id' => $id, 'name' => $at->getFilename(), 'contentId' => $at->getContentId(), 'contentType' => $at->getContentType() ]);
         }
 
         $this->response->content->set(json_encode($resp));

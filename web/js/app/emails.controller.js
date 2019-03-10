@@ -104,6 +104,7 @@
         vm.formatDate = formatDate;
         vm.filterSelectedHeaders = filterSelectedHeaders;
         vm.isRead = isRead;
+        vm.encode = encode;
 
         $window.resizeIframe = resizeIframe;
         var interval = $interval(fetchNewerEmails, 4000);
@@ -156,7 +157,7 @@
         }
 
         function encode(input) {
-            return window.encodeURIComponent(input);
+            return $window.encodeURIComponent(input);
         }
 
         function resizeIframe(ob) {
@@ -170,7 +171,8 @@
                                 p1,
                                 'emails/' + vm.selectedEmail.id
                                     + '/attachments/' + att[i].id + '/'
-                                    + att[i].name + '?inline=true'
+                                    + $window.encodeURIComponent(att[i].name) +
+                                    '?inline=true'
                             );
                         }
                     }

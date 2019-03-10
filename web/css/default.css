@@ -46,7 +46,7 @@
 }
 
 #emailsList .unread {
-    background: #fefeee;
+    background: #eeb;/*#fefeee;*/
 }
 
 #emailsList .md-list-item-text h3, #emailsList .md-list-item-text h4 {

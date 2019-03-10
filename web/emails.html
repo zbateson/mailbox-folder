@@ -98,7 +98,7 @@
                 <md-toolbar ng-if="vm.selectedEmail.attachments.length !== 0" class="attachments">
                     <div class="md-toolbar-tools">
                         <md-icon flex="nogrow" aria-label="Attachment">attachment</md-icon>
-                        <a href="emails/{{ vm.selectedEmail.id }}/attachments/{{ att.id }}/{{ att.name }}" md-button ng-repeat="att in vm.selectedEmail.attachments">{{ att.name }}</a>
+                        <a href="emails/{{ vm.selectedEmail.id }}/attachments/{{ att.id }}/{{ vm.encode(att.name) }}" md-button ng-repeat="att in vm.selectedEmail.attachments">{{ att.name || '[unnamed:' + $index + ']' }}</a>
                     </div>
                 </md-toolbar>
                 <md-dialog-content>
