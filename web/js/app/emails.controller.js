@@ -224,6 +224,10 @@
             }
             ob.style.height = 0;
             ob.style.height = ob.contentDocument.body.scrollHeight + 'px';
+            ob.contentWindow.onload = function() {
+                // after images load
+                ob.style.height = ob.contentDocument.body.scrollHeight + 'px';
+            }
         }
 
         function onFocus() {
