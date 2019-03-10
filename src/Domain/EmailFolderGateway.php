@@ -124,12 +124,13 @@ class EmailFolderGateway
         $arr = [];
         foreach ($res as $d) {
             if (isset($filter['text']) && $filter['text'] !== '') {
-                if (!stripos($d->subject, $filter['text'])
-                    && !stripos($d->from, $filter['text'])
-                    && !stripos($d->to, $filter['text'])
-                    && !stripos($d->cc, $filter['text'])
-                    && !stripos($d->bcc, $filter['text'])
-                    && !stripos($d->preview, $filter['text'])) {
+                if (stripos($d->subject, $filter['text']) === false
+                    && stripos($d->from, $filter['text']) === false
+                    && stripos($d->to, $filter['text']) === false
+                    && stripos($d->cc, $filter['text']) === false
+                    && stripos($d->bcc, $filter['text']) === false
+                    && stripos($d->preview, $filter['text']) === false) {
+                    $this->logger->debug($d->subject . ' ' . stripos($d->from, $filter['text']));
                     continue;
                 }
             }
