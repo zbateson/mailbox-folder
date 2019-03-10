@@ -5,6 +5,7 @@ use ZBateson\MailboxFolder\EmailFactory;
 use ZBateson\MailMimeParser\MailMimeParser;
 use JamesMoss\Flywheel\Repository;
 use JamesMoss\Flywheel\Document;
+use JamesMoss\Flywheel\Query;
 use DirectoryIterator;
 use DateTime;
 
@@ -67,7 +68,7 @@ class EmailFolderGateway
             } elseif ($message->getHtmlStream() !== null) {
                 $stream = $message->getHtmlStream();
                 $html = $stream->read(10240);
-                $preview = substr(strip_tags($html), 0, 500);
+                $preview = substr(html_entity_decode(strip_tags($html)), 0, 500);
             }
             $preview = preg_replace('/\s+/', ' ', $preview);
 
@@ -106,38 +107,68 @@ class EmailFolderGateway
         }
     }
 
+    private function applyFilter(Query $query, array $filter)
+    {
+        $query = $query->where('attachmentCount', '>', ($filter['attachments']) ? 0 : -1);
+        if (!empty($filter['newerThan'])) {
+            $query = $query->andWhere('date', '>', $filter['newerThan']);
+        }
+        if (!empty($filter['startDate'])) {
+            $query = $query->andWhere('date', '>=', $filter['startDate']);
+        }
+        if (!empty($filter['endDate'])) {
+            $query = $query->andWhere('date', '<=', $filter['endDate']);
+        }
+        $query->orderBy('date DESC');
+        $res = $query->execute();
+        $arr = [];
+        foreach ($res as $d) {
+            if (isset($filter['text']) && $filter['text'] !== '') {
+                if (!stripos($d->subject, $filter['text'])
+                    && !stripos($d->from, $filter['text'])
+                    && !stripos($d->to, $filter['text'])
+                    && !stripos($d->cc, $filter['text'])
+                    && !stripos($d->bcc, $filter['text'])
+                    && !stripos($d->preview, $filter['text'])) {
+                    continue;
+                }
+            }
+            array_push($arr, $d);
+        }
+        return $arr;
+    }
+
     /**
      * Returns all the emails within the passed limits.
      *
      * @param int $skip
      * @param int $count
-     * @return \JamesMoss\Flywheel\Result
+     * @return array
      */
-    public function fetchAll($skip, $count)
+    public function fetchAll($skip, $count, array $filter)
     {
-        return $res = $this->repository->query()
-            ->orderBy('date DESC')
-            ->limit($count, $skip)
-            ->execute();
+        $arr = $this->applyFilter($this->repository->query(), $filter);
+        if (count($arr) > $skip) {
+            return array_slice($arr, $skip, $count);
+        }
+        return [];
     }
 
     /**
      * Returns emails newer than the passed email Document.
      *
      * @param Document $email
-     * @return \JamesMoss\Flywheel\Result
+     * @return array
      */
-    public function fetchNewerThan(Document $email)
+    public function fetchNewerThan(Document $email, $filter)
     {
-        return $res = $this->repository->query()
-            ->where('date', '>', $email->date)
-            ->orderBy('date DESC')
-            ->execute();
+        $filter['newerThan'] = $email->date;
+        $ret = $this->applyFilter($this->repository->query(), $filter);
     }
 
-    public function getTotal()
+    public function getTotal($filter)
     {
-        return count($this->repository->findAll());
+        return count($this->applyFilter($this->repository->query(), $filter));
     }
 
     /**

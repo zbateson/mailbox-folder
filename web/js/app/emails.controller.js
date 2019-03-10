@@ -11,7 +11,7 @@
 
     var serviceUrl = 'api/emails';
 
-    function Emails($http) {
+    function Emails(filter, $http) {
 
         var self = this;
 
@@ -48,26 +48,39 @@
             // Set the page to null so we know it is already being fetched.
             self.pages[pageNumber] = null;
 
-            var params = { page: pageNumber, perPage: self.pageSize };
+            var params = angular.copy(filter);
+            params.page = pageNumber;
+            params.perPage = self.pageSize;
+
             $http.get(self.service, { params: params }).then(function(response) {
                 self.pages[pageNumber] = response.data.emails;
             });
         }
 
         function fetchItemCount() {
-            $http.get(self.service, { params: { total: true } }).then(angular.bind(self, function(response) {
-                this.numItems = response.data.count;
-            }));
+            var params = angular.copy(filter);
+            params.total = true;
+            $http.get(self.service, { params: params }).then(
+                angular.bind(self, function(response) {
+                    this.numItems = response.data.count;
+                })
+            );
         }
 
         function fetchNewer() {
             if (self.pages && self.pages[0] !== null && self.pages[0].length > 0) {
-                $http.get(self.service, { params: { newer: self.pages[0][0].id } }).then(angular.bind(self, function(response) {
-                    this.numItems += response.data.emails.length;
-                    for (var i = response.data.emails.length - 1; i > -1; --i) {
-                        self.pages[0].unshift(response.data.emails[i]);
-                    }
-                }));
+
+                var params = angular.copy(filter);
+                params.newer = self.pages[0][0].id;
+
+                $http.get(self.service, { params: params }).then(
+                    angular.bind(self, function(response) {
+                        this.numItems += response.data.emails.length;
+                        for (var i = response.data.emails.length - 1; i > -1; --i) {
+                            self.pages[0].unshift(response.data.emails[i]);
+                        }
+                    })
+                );
             }
         }
     }
@@ -77,8 +90,8 @@
      * @desc
      * @memberof mailboxfolder
      */
-    EmailsController.$inject = [ '$scope', '$http', '$interval', '$mdDialog', '$sce', '$window' ];
-    function EmailsController($scope, $http, $interval, $mdDialog, $sce, $window) {
+    EmailsController.$inject = [ '$scope', '$http', '$interval', '$timeout', '$mdDialog', '$sce', '$window' ];
+    function EmailsController($scope, $http, $interval, $timeout, $mdDialog, $sce, $window) {
 
         var windowFocused = true;
         var win = angular.element($window);
@@ -93,7 +106,17 @@
 
         // ViewModel
         var vm = this;
-        vm.emails = new Emails($http);
+        vm.filter = {
+            attachments: false,
+            text: '',
+            startDate: null,
+            endDate: null
+        };
+
+        vm.emails = new Emails(vm.filter, $http);
+        vm.isEmptyFilter = isEmptyFilter;
+        vm.clearFilter = clearFilter;
+
         vm.emailDialogTitle = 'Opening Email...';
         vm.selectedEmail = null;
         vm.selectedHtml = null;
@@ -109,7 +132,34 @@
         $window.resizeIframe = resizeIframe;
         var interval = $interval(fetchNewerEmails, 4000);
 
+        var timeoutPromise;
+        $scope.$watch(
+            function() {
+                return vm.filter.attachments + vm.filter.text + vm.filter.startDate + vm.filter.endDate;
+            },
+            function() {
+                $timeout.cancel(timeoutPromise);
+                timeoutPromise = $timeout(function() {
+                    vm.emails = new Emails(vm.filter, $http);
+                }, 300);
+            }
+        );
+
         //////////////////////////
+
+        function isEmptyFilter() {
+            return (vm.filter.attachments === false
+                && vm.filter.text === ''
+                && vm.filter.startDate === null
+                && vm.filter.endDate === null);
+        }
+
+        function clearFilter() {
+            vm.filter.attachments = false;
+            vm.filter.text = '';
+            vm.filter.startDate = null;
+            vm.filter.endDate =  null;
+        }
 
         function formatDate(date) {
             return moment(date).fromNow();

@@ -33,7 +33,7 @@ class EmailDownloadAction
         }
 
         $this->response->headers->set('Content-Disposition', 'attachment; filename="' . $id . '.mime"');
-        $this->response->content->setType($message->getContentType());
+        $this->response->content->setType('message/rfc822');
         $this->response->content->set($message);
     }
 }

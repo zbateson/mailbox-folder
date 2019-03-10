@@ -3,7 +3,7 @@
         <div class="md-toolbar-tools">
             <h1>Mailbox Folder Outbox</h1>
             <span flex></span>
-            <small ng-if="vm.emails && vm.emails.getLength() !== 0">{{ vm.emails.getLength() }} Emails</small>
+            <small ng-if="!vm.isEmptyFilter() || (vm.emails && vm.emails.getLength() !== 0)">{{ vm.emails.getLength() }} Emails</small>
         </div>
     </md-toolbar>
     <md-toolbar class="heading md-tall md-hue-3" flex="none">
@@ -22,11 +22,11 @@
                 </md-input-container>
                 <md-input-container flex="none">
                     <label>Start date</label>
-                    <md-datepicker md-open-on-focus md-max-date="vm.maxDateStart()" ng-model="vm.filter.startDate"></md-datepicker>
+                    <md-datepicker md-open-on-focus ng-model="vm.filter.startDate"></md-datepicker>
                 </md-input-container>
                 <md-input-container flex="none">
                     <label>End date</label>
-                    <md-datepicker md-open-on-focus md-min-date="vm.minDateEnd()" md-max-date="vm.maxDateToday" ng-model="vm.filter.endDate"></md-datepicker>
+                    <md-datepicker md-open-on-focus ng-model="vm.filter.endDate"></md-datepicker>
                 </md-input-container>
                 <div class="filter-button" flex="none">
                     <md-button
@@ -38,15 +38,24 @@
             </div>
         </form>
     </md-toolbar>
-    <p ng-show="!vm.emails || vm.emails.getLength() === 0" flex="none">
-        There are no emails to show at the moment.
-    </p>
+    <div flex="none">
+        <p ng-show="vm.isEmptyFilter() && (!vm.emails || vm.emails.getLength() === 0)">
+            <strong>Nothing to see here...</strong> place a raw email
+            strategically in your configured folder, and with luck and a dash of
+            magic, here's where it would show.
+        </p>
+        <p ng-show="!vm.isEmptyFilter() && (!vm.emails || vm.emails.getLength() === 0)">
+            <strong>Zilch...</strong> we've carried the 0's, dotted the &quot;i's&quot;,
+            and come back empty handed.  You could try expanding your filters to
+            include someting.  It may help us help you.
+        </p>
+    </div>
     <md-list flex="100" md-virtual-repeat-container id="emailsList">
-        <md-list-item md-virtual-repeat="item in vm.emails" md-on-demand class="md-3-line" ng-class="{ unread: !vm.isRead(item.id) }" ng-click="vm.openEmailDialog($event, item)">
-            <md-icon ng-if="item.attachmentCount" md-font-set="material-icons" aria-label="Attachment">attachment</md-icon>
-            <md-icon ng-if="!item.attachmentCount && !vm.isRead(item.id)" md-font-set="material-icons" aria-label="Unread">markunread</md-icon>
-            <md-icon ng-if="!item.attachmentCount && vm.isRead(item.id)" aria-label=""></md-icon>
-            <div class="md-list-item-text">
+        <md-list-item md-virtual-repeat="item in vm.emails" md-on-demand class="md-3-line" ng-class="{ unread: item && !vm.isRead(item.id) }" ng-click="vm.openEmailDialog($event, item)">
+            <md-icon ng-if="item && item.attachmentCount" md-font-set="material-icons" aria-label="Attachment">attachment</md-icon>
+            <md-icon ng-if="item && !item.attachmentCount && !vm.isRead(item.id)" md-font-set="material-icons" aria-label="Unread">markunread</md-icon>
+            <md-icon ng-if="item && !item.attachmentCount && vm.isRead(item.id)" aria-label=""></md-icon>
+            <div ng-if="item" class="md-list-item-text">
                 <h3 ng-if="item.to"><strong>To:</strong> {{ item.to }}</h3>
                 <h4 ng-if="item.cc || item.bcc">
                     <span ng-if="item.cc"><strong>Cc:</strong> {{ item.cc }}</span>
@@ -54,7 +63,7 @@
                 </h4>
                 <p><strong>{{ item.subject }}</strong> {{ item.preview }}</p>
             </div>
-            <div class="md-secondary">
+            <div ng-if="item" class="md-secondary">
                 <div class="from-area">
                     <div><strong>{{ vm.formatDate(item.date.date) }}</strong>, from:</div>
                     <div>{{ item.from }}</div>
