@@ -94,7 +94,7 @@ class EmailRestAction
     private function sanitizeHtml($html)
     {
         $dom = new DOMDocument();
-        $dom->loadHTML($html);
+        $dom->loadHTML($html, LIBXML_NOWARNING | LIBXML_NOERROR);
         $this->sanitizeNode($dom);
         return $dom->saveHTML();
     }
