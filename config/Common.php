@@ -53,6 +53,7 @@ class Common extends Config
             'request' => $di->lazyGet('aura/web-kernel:request'),
             'response' => $di->lazyGet('aura/web-kernel:response'),
             'emailFolderGateway' => $di->lazyNew('ZBateson\MailboxFolder\Domain\EmailFolderGateway'),
+            'basepath' => $di->lazyValue('basepath'),
         ];
         $di->params['ZBateson\MailboxFolder\App\Actions\EmailAttachmentAction'] = [
             'request' => $di->lazyGet('aura/web-kernel:request'),

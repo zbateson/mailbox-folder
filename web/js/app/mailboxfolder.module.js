@@ -1,7 +1,7 @@
 (function() {
     'use strict';
     angular
-    .module('mailboxfolder', ['ngMaterial', 'ngAnimate'])
+    .module('mailboxfolder', [ 'ngMaterial', 'ngAnimate' ])
     .config(function($mdThemingProvider) {
         $mdThemingProvider.theme('default')
             .primaryPalette('deep-purple')

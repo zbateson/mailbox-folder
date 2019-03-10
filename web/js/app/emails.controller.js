@@ -90,8 +90,10 @@
      * @desc
      * @memberof mailboxfolder
      */
-    EmailsController.$inject = [ '$scope', '$http', '$interval', '$timeout', '$mdDialog', '$sce', '$window' ];
-    function EmailsController($scope, $http, $interval, $timeout, $mdDialog, $sce, $window) {
+    EmailsController.$inject = [
+        '$scope', '$http', '$interval', '$timeout', '$mdDialog', '$window'
+    ];
+    function EmailsController($scope, $http, $interval, $timeout, $mdDialog, $window) {
 
         var windowFocused = true;
         var win = angular.element($window);
@@ -211,26 +213,8 @@
         }
 
         function resizeIframe(ob) {
-            var emailHtml = vm.selectedEmail.html.replace(
-                /<img\b[^>]*src\s*=\s*"(cid:([^"]*))"[^>]*>/ig,
-                function(match, p1, p2) {
-                    var att = vm.selectedEmail.attachments;
-                    for (var i = 0; i < att.length; ++i) {
-                        if (att[i].contentId === p2) {
-                            return match.replace(
-                                p1,
-                                'emails/' + vm.selectedEmail.id
-                                    + '/attachments/' + att[i].id + '/'
-                                    + $window.encodeURIComponent(att[i].name) +
-                                    '?inline=true'
-                            );
-                        }
-                    }
-                    return match;
-                }
-            );
             ob.contentDocument.open();
-            ob.contentDocument.write(emailHtml);
+            ob.contentDocument.write(vm.selectedEmail.html);
             ob.contentDocument.close();
             ob.contentDocument.body.style.margin = "0px";
             ob.contentDocument.body.firstElementChild.style.marginTop = "0px";

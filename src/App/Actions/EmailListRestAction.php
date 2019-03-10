@@ -3,7 +3,6 @@ namespace ZBateson\MailboxFolder\App\Actions;
 
 use Aura\Web\Request;
 use Aura\Web\Response;
-use Aura\View\View;
 use ZBateson\MailboxFolder\Domain\EmailFolderGateway;
 
 /**
@@ -26,6 +25,9 @@ class EmailListRestAction
 
     private function getArrayFromResult($res)
     {
+        if (empty($res)) {
+            return [];
+        }
         $returnFetchAllFields = [
             'subject', 'date', 'from', 'to', 'cc', 'bcc',
             'attachmentCount', 'preview'
