@@ -3,6 +3,7 @@ namespace ZBateson\MailboxFolder\Domain;
 
 use ZBateson\MailboxFolder\EmailFactory;
 use ZBateson\MailMimeParser\MailMimeParser;
+use ZBateson\MailMimeParser\Message;
 use JamesMoss\Flywheel\Repository;
 use JamesMoss\Flywheel\Document;
 use JamesMoss\Flywheel\Query;
@@ -30,6 +31,19 @@ class EmailFolderGateway
         $this->path = $path;
         $this->logger = $logger;
         $this->rescan();
+    }
+
+    private function getEmailHeader($header, Message $message)
+    {
+        $h = $message->getHeader($header);
+        if ($h === null) {
+            return null;
+        }
+        $ret = '';
+        foreach ($h->getAddresses() as $addr) {
+            $ret .= $addr->getName() . ' <' . $addr->getEmail() . '>';
+        }
+        return $ret;
     }
 
     private function rescan()
@@ -76,10 +90,10 @@ class EmailFolderGateway
                 'file' => $fi->getPathname(),
                 'subject' => $message->getHeaderValue('subject'),
                 'date' => $message->getHeader('date')->getDateTime(),
-                'from' => $message->getHeaderValue('from'),
-                'to' => $message->getHeaderValue('to'),
-                'cc' => $message->getHeaderValue('cc'),
-                'bcc' => $message->getHeaderValue('bcc'),
+                'from' => $this->getEmailHeader('from', $message),
+                'to' => $this->getEmailHeader('to', $message),
+                'cc' => $this->getEmailHeader('cc', $message),
+                'bcc' => $this->getEmailHeader('bcc', $message),
                 'attachmentCount' => $message->getAttachmentCount(),
                 'preview' => $preview
             ]);
