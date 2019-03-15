@@ -1,6 +1,13 @@
 
 .content {
     height: 100%;
+    background: #fff;
+}
+
+.form-heading {
+    width: 100%;
+    max-width: 100%;
+    border-bottom: 1px dashed #888;
 }
 
 .heading .md-toolbar-tools {
@@ -20,13 +27,13 @@
     height: 100%;
 }
 
-.email-container > div {
+.email-container .email-message, .form-heading form {
     max-width: 900px;
     width: 100%;
     margin: 0 auto;
 }
 
-.email-container > div > p {
+.email-container .email-message > p {
     margin: 60px;
 }
 
@@ -51,17 +58,25 @@
     margin: 0 auto;
 }
 
+#emailsList md-list-item .md-list-item-text {
+    width: 700px;
+}
+
 #emailsList md-icon {
     margin-right: 16px;
 }
 
 #emailsList .unread {
-    background: #eeb;/*#fefeee;*/
+    background: #eeeeff;/*#ccccff;/*#fefeee;*/
 }
 
 #emailsList .md-list-item-text h3, #emailsList .md-list-item-text h4 {
     font-size: 0.9em;
     line-height: 1.1em;
+    width: 700px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 #emailsList strong {
     color: #666;
@@ -123,8 +138,7 @@
 }
 
 #emailDialog .email-headers strong {
-    display: inline-block;
-    min-width: 80px;
+    min-width: 150px;
 }
 
 #emailDialog .attachments {

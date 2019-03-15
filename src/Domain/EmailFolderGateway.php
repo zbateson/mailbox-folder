@@ -1,7 +1,6 @@
 <?php
 namespace ZBateson\MailboxFolder\Domain;
 
-use ZBateson\MailboxFolder\EmailFactory;
 use ZBateson\MailMimeParser\MailMimeParser;
 use ZBateson\MailMimeParser\Message;
 use JamesMoss\Flywheel\Repository;
@@ -9,8 +8,6 @@ use JamesMoss\Flywheel\Document;
 use JamesMoss\Flywheel\Query;
 use DirectoryIterator;
 use DateTime;
-
-use Psr\Log\LoggerInterface;
 
 /**
  * Description of FolderGateway
@@ -33,17 +30,15 @@ class EmailFolderGateway
         $this->rescan();
     }
 
-    private function getEmailHeader($header, Message $message)
+    public function getEmailArrayFromMessageHeader($header, Message $message)
     {
         $h = $message->getHeader($header);
         if ($h === null) {
-            return null;
+            return [];
         }
-        $ret = '';
-        foreach ($h->getAddresses() as $addr) {
-            $ret .= $addr->getName() . ' <' . $addr->getEmail() . '>';
-        }
-        return $ret;
+        return array_map(function ($addr) {
+            return [ 'name' => $addr->getName(), 'email' => $addr->getEmail() ];
+        }, $h->getAddresses());
     }
 
     private function rescan()
@@ -90,10 +85,10 @@ class EmailFolderGateway
                 'file' => $fi->getPathname(),
                 'subject' => $message->getHeaderValue('subject'),
                 'date' => $message->getHeader('date')->getDateTime(),
-                'from' => $this->getEmailHeader('from', $message),
-                'to' => $this->getEmailHeader('to', $message),
-                'cc' => $this->getEmailHeader('cc', $message),
-                'bcc' => $this->getEmailHeader('bcc', $message),
+                'from' => $this->getEmailArrayFromMessageHeader('from', $message),
+                'to' => $this->getEmailArrayFromMessageHeader('to', $message),
+                'cc' => $this->getEmailArrayFromMessageHeader('cc', $message),
+                'bcc' => $this->getEmailArrayFromMessageHeader('bcc', $message),
                 'attachmentCount' => $message->getAttachmentCount(),
                 'preview' => $preview
             ]);
@@ -121,6 +116,22 @@ class EmailFolderGateway
         }
     }
 
+    private function documentHasText($doc, $text)
+    {
+        if (stripos($doc->subject, $text) !== false || stripos($doc->preview, $text) !== false) {
+            return true;
+        }
+        $addrs = [ 'from', 'to', 'cc', 'bcc' ];
+        foreach ($addrs as $a) {
+            if (!empty($doc->$a['email']) && stripos($doc->$a['email'], $text) !== false) {
+                return true;
+            } elseif (!empty($doc->$a['name']) && stripos($doc->$a['name'], $text) !== false) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private function applyFilter(Query $query, array $filter)
     {
         $query = $query->where('attachmentCount', '>', ($filter['attachments']) ? 0 : -1);
@@ -137,16 +148,8 @@ class EmailFolderGateway
         $res = $query->execute();
         $arr = [];
         foreach ($res as $d) {
-            if (isset($filter['text']) && $filter['text'] !== '') {
-                if (stripos($d->subject, $filter['text']) === false
-                    && stripos($d->from, $filter['text']) === false
-                    && stripos($d->to, $filter['text']) === false
-                    && stripos($d->cc, $filter['text']) === false
-                    && stripos($d->bcc, $filter['text']) === false
-                    && stripos($d->preview, $filter['text']) === false) {
-                    $this->logger->debug($d->subject . ' ' . stripos($d->from, $filter['text']));
-                    continue;
-                }
+            if (isset($filter['text']) && $filter['text'] !== '' && !$this->documentHasText($d, $filter['text'])) {
+                continue;
             }
             array_push($arr, $d);
         }

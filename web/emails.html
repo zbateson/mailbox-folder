@@ -6,8 +6,8 @@
             <small ng-if="!vm.isEmptyFilter() || (vm.emails && vm.emails.getLength() !== 0)">{{ vm.emails.getLength() }} Emails</small>
         </div>
     </md-toolbar>
-    <md-toolbar class="heading md-tall md-hue-3" flex="none">
-        <form class="md-toolbar-tools" id="searchForm" method="GET" flex="none" layout="column" layout-align="start start">
+    <div class="form-heading" flex="none">
+        <form id="searchForm" method="GET" flex="none" layout="column" layout-align="start start">
             <div class="attachment-filters">
                 <md-radio-group ng-model="vm.filter.attachments" layout="row">
                     <md-radio-button ng-value="false">All</md-radio-button>
@@ -37,8 +37,8 @@
                 </div>
             </div>
         </form>
-    </md-toolbar>
-    <div flex="none">
+    </div>
+    <div class="email-message" flex="none">
         <p ng-show="vm.isEmptyFilter() && (!vm.emails || vm.emails.getLength() === 0)">
             <strong>Nothing to see here...</strong> place a raw email
             strategically in your configured folder, and with luck and a dash of
@@ -56,17 +56,39 @@
             <md-icon ng-if="item && !item.attachmentCount && !vm.isRead(item.id)" md-font-set="material-icons" aria-label="Unread">markunread</md-icon>
             <md-icon ng-if="item && !item.attachmentCount && vm.isRead(item.id)" aria-label=""></md-icon>
             <div ng-if="item" class="md-list-item-text">
-                <h3 ng-if="item.to"><strong>To:</strong> {{ item.to }}</h3>
-                <h4 ng-if="item.cc || item.bcc">
-                    <span ng-if="item.cc"><strong>Cc:</strong> {{ item.cc }}</span>
-                    <span ng-if="item.bcc"><strong>Bcc:</strong> {{ item.bcc }}</span>
+                <h3 ng-if="item.subject">
+                    <strong>To:</strong>
+                    <span ng-repeat="email in item.to">
+                        <span ng-if="email.name">{{ email.name }}</span><span ng-if="!email.name">{{ email.email }}</span><span ng-if="!$last">,</span>
+                    </span>
+                </h3>
+                <h4 ng-if="(item.cc && item.cc.length !== 0) || (item.bcc && item.bcc.length !== 0)">
+                    <span ng-if="item.cc && item.cc.length !== 0">
+                        <strong>Cc:</strong>
+                        <span ng-repeat="email in item.cc">
+                            <span ng-if="email.name">{{ email.name }}</span>
+                            <span ng-if="!email.name">{{ email.email }}</span>
+                            <span ng-if="!$last">,</span>
+                        </span>
+                    </span>
+                    <span ng-if="item.bcc && item.bcc.length !== 0">
+                        <strong>Bcc:</strong>
+                        <span ng-repeat="email in item.bcc">
+                            <span ng-if="email.name">{{ email.name }}</span>
+                            <span ng-if="!email.name">{{ email.email }}</span>
+                            <span ng-if="!$last">,</span>
+                        </span>
+                    </span>
                 </h4>
                 <p><strong>{{ item.subject }}</strong> {{ item.preview }}</p>
             </div>
             <div ng-if="item" class="md-secondary">
                 <div class="from-area">
                     <div><strong>{{ vm.formatDate(item.date.date) }}</strong>, from:</div>
-                    <div>{{ item.from }}</div>
+                    <div ng-if="item.from && item.from.length !== 0">
+                        <span ng-if="item.from[0].name">{{ item.from[0].name }}</span>
+                        <span ng-if="!item.from[0].name">{{ item.from[0].email }}</span>
+                    </div>
                 </div>
             </div>
         </md-list-item>
@@ -86,14 +108,54 @@
                 </md-toolbar>
                 <md-toolbar class="email-headers-container md-hue-1" layout="row" layout-align="start stretch">
                     <div class="email-headers" flex="flex" layout="column" layout-align="start start">
-                        <div><strong>To:</strong> {{ vm.selectedEmail.to }}</div>
-                        <div ng-if="vm.selectedEmail.cc"><strong>Cc:</strong> {{ vm.selectedEmail.cc }}</div>
-                        <div ng-if="vm.selectedEmail.bcc"><strong>Bcc:</strong> {{ vm.selectedEmail.bcc }}</div>
-                        <div><strong>From:</strong> {{ vm.selectedEmail.from }}</div>
-                        <div><strong>Date:</strong> {{ vm.selectedEmail.date | date:'medium' }}</div>
+                        <div layout="row">
+                            <strong>From:</strong>
+                            <span flex="flex">
+                                <span ng-repeat="email in vm.selectedEmail.from">
+                                    <span ng-if="email.name">{{ email.name }} &lt;{{ email.email }}&gt;</span>
+                                    <span ng-if="!email.name">{{ email.email }}</span>
+                                    <span ng-if="!$last">,</span>
+                                </span>
+                            </span>
+                        </div>
+                        <div layout="row">
+                            <strong>To:</strong>
+                            <span flex="flex">
+                                <span ng-repeat="email in vm.selectedEmail.to">
+                                    <span ng-if="email.name">{{ email.name }} &lt;{{ email.email }}&gt;</span>
+                                    <span ng-if="!email.name">{{ email.email }}</span>
+                                    <span ng-if="!$last">,</span>
+                                </span>
+                            </span>
+                        </div>
+                        <div layout="row" ng-if="vm.selectedEmail.cc && vm.selectedEmail.cc.length !== 0">
+                            <strong>Cc:</strong>
+                            <span flex="flex">
+                                <span ng-repeat="email in vm.selectedEmail.cc">
+                                    <span ng-if="email.name">{{ email.name }} &lt;{{ email.email }}&gt;</span>
+                                    <span ng-if="!email.name">{{ email.email }}</span>
+                                    <span ng-if="!$last">,</span>
+                                </span>
+                            </span>
+                        </div>
+                        <div layout="row" ng-if="vm.selectedEmail.bcc && vm.selectedEmail.bcc.length !== 0">
+                            <strong>Bcc:</strong>
+                            <span flex="flex">
+                                <span ng-repeat="email in vm.selectedEmail.bcc">
+                                    <span ng-if="email.name">{{ email.name }} &lt;{{ email.email }}&gt;</span>
+                                    <span ng-if="!email.name">{{ email.email }}</span>
+                                    <span ng-if="!$last">,</span>
+                                </span>
+                            </span>
+                        </div>
+                        <div layout="row">
+                            <strong>Date:</strong>
+                            <span flex="flex">{{ vm.selectedEmail.date | date:'medium' }}</span>
+                        </div>
                         <div ng-if="vm.showFullHeaders">
-                            <div ng-repeat="header in vm.filterSelectedHeaders()">
-                                <strong>{{ header.name }}: </strong> {{ header.value }}
+                            <div layout="row" ng-repeat="header in vm.filterSelectedHeaders()">
+                                <strong>{{ header.name }}: </strong>
+                                <span flex="flex">{{ header.value }}</span>
                             </div>
                         </div>
                     </div>

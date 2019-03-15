@@ -99,19 +99,6 @@ class EmailRestAction
         return $dom->saveHTML();
     }
 
-    private function getEmailHeader($header, Message $message)
-    {
-        $h = $message->getHeader($header);
-        if ($h === null) {
-            return null;
-        }
-        $ret = '';
-        foreach ($h->getAddresses() as $addr) {
-            $ret .= $addr->getName() . ' <' . $addr->getEmail() . '>';
-        }
-        return $ret;
-    }
-
     private function prepareHtml(Message $message, $emailId)
     {
         $html = $message->getHtmlContent();
@@ -136,10 +123,10 @@ class EmailRestAction
                 'id' => $id,
                 'subject' => $message->getHeaderValue('subject'),
                 'date' => $message->getHeader('date')->getDateTime()->format('Y-m-d\TH:i:s.vP'),
-                'from' => $this->getEmailHeader('from', $message),
-                'to' => $this->getEmailHeader('to', $message),
-                'cc' => $this->getEmailHeader('cc', $message),
-                'bcc' => $this->getEmailHeader('bcc', $message),
+                'from' => $this->emailFolderGateway->getEmailArrayFromMessageHeader('from', $message),
+                'to' => $this->emailFolderGateway->getEmailArrayFromMessageHeader('to', $message),
+                'cc' => $this->emailFolderGateway->getEmailArrayFromMessageHeader('cc', $message),
+                'bcc' => $this->emailFolderGateway->getEmailArrayFromMessageHeader('bcc', $message),
                 'attachments' => [],
                 'text' => $message->getTextContent(),
                 'html' => $this->prepareHtml($message, $id),
