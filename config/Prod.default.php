@@ -8,6 +8,7 @@ class Prod extends Config
 {
     public function define(Container $di)
     {
+        $di->values['logfile'] = '/path/to/log/file.log';
         $di->values['basepath'] = '/';
         $di->values['appname'] = 'mailbox-folder';
         $di->values['maildir'] = '/path/to/mailbox/folder';

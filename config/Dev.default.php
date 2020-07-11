@@ -11,6 +11,10 @@ class Dev extends Config
         ini_set('error_reporting', E_ALL);
         ini_set('display_errors', true);
 
+        $project = $di->get('project');
+        $mode = $project->getMode();
+
+        $di->values['logfile'] = $project->getPath("tmp/log/{$mode}.log");
         $di->values['maildir'] = dirname(__DIR__) . '/vendor/zbateson/mail-mime-parser/tests/_data/emails';
     }
 

@@ -10,6 +10,7 @@ class Common extends Config
     {
         $di->set('aura/project-kernel:logger', $di->lazyNew('Monolog\Logger'));
 
+        $di->values['logfile'] = '';
         $di->values['maildir'] = '.';
         $di->values['basepath'] = '/';
         $di->values['writedir'] = sys_get_temp_dir() . '/mailbox-folder';
@@ -82,17 +83,16 @@ class Common extends Config
 
     public function modifyLogger(Container $di)
     {
-        $project = $di->get('project');
-        $mode = $project->getMode();
-        $file = $project->getPath("tmp/log/{$mode}.log");
-
-        $logger = $di->get('aura/project-kernel:logger');
-        $logger->pushHandler($di->newInstance(
-            'Monolog\Handler\StreamHandler',
-            [
-                'stream' => $file,
-            ]
-        ));
+        $logfile = $di->get('logfile');
+        if ($logfile) {
+            $logger = $di->get('aura/project-kernel:logger');
+            $logger->pushHandler($di->newInstance(
+                'Monolog\Handler\StreamHandler',
+                [
+                    'stream' => $file,
+                ]
+            ));
+        }
     }
 
     public function modifyWebRouter(Container $di)
