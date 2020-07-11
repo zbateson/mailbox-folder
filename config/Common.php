@@ -83,13 +83,13 @@ class Common extends Config
 
     public function modifyLogger(Container $di)
     {
-        $logfile = $di->get('logfile');
+        $logfile = $di->lazyValue('logfile');
         if ($logfile) {
             $logger = $di->get('aura/project-kernel:logger');
             $logger->pushHandler($di->newInstance(
                 'Monolog\Handler\StreamHandler',
                 [
-                    'stream' => $file,
+                    'stream' => $logfile,
                 ]
             ));
         }
