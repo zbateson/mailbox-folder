@@ -4,7 +4,7 @@ namespace ZBateson\MailboxFolder\App\Actions;
 use Aura\Web\Request;
 use Aura\Web\Response;
 use ZBateson\MailboxFolder\Domain\EmailFolderGateway;
-use ZBateson\MailMimeParser\Message;
+use ZBateson\MailMimeParser\IMessage;
 use DOMDocument;
 use DOMNode;
 use DOMElement;
@@ -33,7 +33,7 @@ class EmailRestAction
         $this->basepath = $basepath;
     }
 
-    private function replaceHtmlContentId(Message $message, $emailId)
+    private function replaceHtmlContentId(IMessage $message, $emailId)
     {
         return preg_replace_callback(
             [
@@ -99,7 +99,7 @@ class EmailRestAction
         return $dom->saveHTML();
     }
 
-    private function prepareHtml(Message $message, $emailId)
+    private function prepareHtml(IMessage $message, $emailId)
     {
         $html = $message->getHtmlContent();
         if (!empty($html)) {

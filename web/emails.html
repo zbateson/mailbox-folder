@@ -52,9 +52,9 @@
     </div>
     <md-list flex="100" md-virtual-repeat-container id="emailsList">
         <md-list-item md-virtual-repeat="item in vm.emails" md-on-demand class="md-3-line" ng-class="{ unread: item && !vm.isRead(item.id) }" ng-click="vm.openEmailDialog($event, item)">
-            <md-icon ng-if="item && item.attachmentCount" md-font-set="material-icons" aria-label="Attachment">attachment</md-icon>
-            <md-icon ng-if="item && !item.attachmentCount && !vm.isRead(item.id)" md-font-set="material-icons" aria-label="Unread">markunread</md-icon>
-            <md-icon ng-if="item && !item.attachmentCount && vm.isRead(item.id)" aria-label=""></md-icon>
+            <md-icon ng-if="item && item.hasAttachments" md-font-set="material-icons" aria-label="Attachment">attachment</md-icon>
+            <md-icon ng-if="item && !item.hasAttachments && !vm.isRead(item.id)" md-font-set="material-icons" aria-label="Unread">markunread</md-icon>
+            <md-icon ng-if="item && !item.hasAttachments && vm.isRead(item.id)" aria-label=""></md-icon>
             <div ng-if="item" class="md-list-item-text">
                 <h3 ng-if="item.subject">
                     <strong>To:</strong>

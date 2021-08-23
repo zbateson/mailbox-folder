@@ -30,7 +30,7 @@ class EmailListRestAction
         }
         $returnFetchAllFields = [
             'subject', 'date', 'from', 'to', 'cc', 'bcc',
-            'attachmentCount', 'preview'
+            'hasAttachments', 'preview'
         ];
 
         $ret = [];

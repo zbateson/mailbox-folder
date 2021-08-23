@@ -28,7 +28,8 @@ class EmailAttachmentAction
     {
         $message = $this->emailFolderGateway->fetchMessageById($emailId);
         if (!$message || !$message->getAttachmentPart(intval($id))) {
-            $response->status->set('404', 'Not Found');
+            var_dump('here');
+            //$response->status->set('404', 'Not Found');
             return;
         }
         $part = $message->getAttachmentPart(intval($id));

@@ -2,7 +2,7 @@
 namespace ZBateson\MailboxFolder\Domain;
 
 use ZBateson\MailMimeParser\MailMimeParser;
-use ZBateson\MailMimeParser\Message;
+use ZBateson\MailMimeParser\IMessage;
 use JamesMoss\Flywheel\Repository;
 use JamesMoss\Flywheel\Document;
 use JamesMoss\Flywheel\Query;
@@ -30,7 +30,7 @@ class EmailFolderGateway
         $this->rescan();
     }
 
-    public function getEmailArrayFromMessageHeader($header, Message $message)
+    public function getEmailArrayFromMessageHeader($header, IMessage $message)
     {
         $h = $message->getHeader($header);
         if ($h === null) {
@@ -57,9 +57,7 @@ class EmailFolderGateway
                 continue;
             }
 
-            $handle = fopen($fi->getPathname(), 'r');
-            $message = $this->parser->parse($handle);
-            fclose($handle);
+            $message = $this->parser->parse(fopen($fi->getPathname(), 'r'), true);
 
             if ($message->getHeader('from') === null) {
                 $this->logger->notice('Unable to parse email ' . $fi->getPathname() . '.');
@@ -89,7 +87,7 @@ class EmailFolderGateway
                 'to' => $this->getEmailArrayFromMessageHeader('to', $message),
                 'cc' => $this->getEmailArrayFromMessageHeader('cc', $message),
                 'bcc' => $this->getEmailArrayFromMessageHeader('bcc', $message),
-                'attachmentCount' => $message->getAttachmentCount(),
+                'hasAttachments' => ($message->getAttachmentPart(0) !== null),
                 'preview' => $preview
             ]);
             $email->setId($id);
@@ -134,7 +132,14 @@ class EmailFolderGateway
 
     private function applyFilter(Query $query, array $filter)
     {
-        $query = $query->where('attachmentCount', '>', ($filter['attachments']) ? 0 : -1);
+
+        $query = $query->where(function ($query) use ($filter) {
+            $query->where('hasAttachments', '==', $filter['attachments']);
+            if (!$filter['attachments']) {
+                $query->orWhere('hasAttachments', '!=', $filter['attachments']);
+            }
+        });
+
         if (!empty($filter['newerThan'])) {
             $query = $query->andWhere('date', '>', $filter['newerThan']);
         }
@@ -214,9 +219,7 @@ class EmailFolderGateway
         }
 
         $filepath = $doc->file;
-        $handle = fopen($filepath, 'r');
-        $message = $this->parser->parse($handle);
-        fclose($handle);
+        $message = $this->parser->parse(fopen($filepath, 'r'), true);
 
         $ctime = DateTime::createFromFormat('U', filectime($filepath));
         $message->setRawHeader(
